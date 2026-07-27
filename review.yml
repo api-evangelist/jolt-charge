@@ -1,0 +1,311 @@
+aid: jolt-charge
+name: JOLT
+review:
+  question: Does JOLT publish a public developer programme, a documented API, or any
+    machine-readable API contract for its EV charging network or energy data?
+  answer: false
+  date: '2026-07-27'
+  reviewer: API Evangelist
+  method: Anonymous HTTP probing of jolt.com.au / joltcharge.com and their subdomains,
+    inspection of the WordPress REST discovery document, an anonymous query against
+    the Australian CDR Register energy data holder endpoint, and a read of every
+    product, advertising, fleet and company page listed in the AU sitemap.
+findings:
+  summary: |
+    JOLT is a charge point operator and digital out-of-home media network, not an
+    energy retailer. It has no developer portal, no API documentation, no OpenAPI or
+    other machine-readable contract, no open data feed, and no published conformance
+    to any EV-charging or energy data standard. The only public HTTP surfaces found
+    on its domains are a marketing WordPress install and a static redirect host named
+    api.joltcharge.com that serves no API. Every piece of customer data (charging
+    sessions, JOLT Plus membership, AutoCharge enrolment) is reachable only through
+    the JOLT consumer mobile app; every piece of advertising audience data is
+    reachable only by filling in a lead form and speaking to sales.
+  primaryDomainBehaviour: |
+    https://jolt.com.au 301-redirects to https://joltcharge.com/au/ (HTTP 301 then
+    200). joltcharge.com is a multi-region WordPress multisite with /au/, /nz/, /ca/,
+    /uk/ and /us/ sections, each with its own Yoast sitemap index.
+
+mandate:
+  homeMarket: Australia
+  tier: ev-charging
+  regime: none
+  status: not-applicable
+  regimeReasoning: |
+    The Australian Consumer Data Right was extended to energy by designation, with
+    AEMO acting as the gateway for standardised retailer data and electricity
+    retailers designated as data holders. That designation reaches ENERGY RETAILERS
+    and AEMO. JOLT is neither: it is a downstream charge point operator that
+    purchases electricity and resells charging sessions, and it holds no retail
+    authorisation surfaced anywhere in its public material. The CDR energy mandate
+    therefore does not apply to this organisation. This is recorded as `none` /
+    `not-applicable` rather than `designated-not-live`, because there is no
+    obligation on paper either.
+  verification:
+    - probe: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+      headers: 'x-v: 1'
+      httpStatus: 200
+      date: '2026-07-27'
+      result: |
+        The CDR Register's public, anonymously readable energy data holder brands
+        endpoint returned 84 energy data holder brands (Origin Energy, AGL,
+        EnergyAustralia, ENGIE, Alinta Energy, Aurora Energy, Powershop, Arcline by
+        RACV, Cooperative Power, Kogan Energy, Sumo Power and others, each with a
+        publicBaseUri). A case-insensitive search of every brandName for "jolt"
+        returned ZERO matches. JOLT is not a designated CDR energy data holder.
+      note: |
+        This is the control observation for the series. The CDR energy register is
+        itself live, open and machine-readable — the mandate produced a real,
+        anonymously queryable public artifact — but it enumerates retailers, not the
+        charging infrastructure layer. A mandate transplanted from banking into
+        energy reached the retail seam and stopped there.
+    - probe: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands
+      headers: 'x-v: 3'
+      httpStatus: 404
+      date: '2026-07-27'
+      result: Not a valid register path; the /summary variant above is the public one.
+  claimedComplianceFound: false
+  claimVsImplementation: |
+    No compliance claim of any kind was found on JOLT's site — no CDR page, no open
+    data page, no standards page. There is therefore no gap between claim and
+    implementation to adjudicate here; there is simply nothing. This is the honest
+    and common answer for the EV-charging tier.
+
+dataStandard:
+  implemented: no standard reference found
+  detail: |
+    JOLT names CCS2 and CHAdeMO on its charging pages. Those are physical connector
+    and charging-hardware standards, NOT data or API standards, and they say nothing
+    about interoperability at the data layer. No reference to OCPP (charger-to-backend),
+    OCPI (roaming between operators and e-mobility service providers), OpenADR,
+    IEEE 2030.5, IEC CIM, Green Button / ESPI, or the CDR Consumer Data Standards
+    (energy) appears anywhere on the public site.
+    The /au/autocharge/ page markets an "AutoCharge" feature to JOLT Plus members —
+    plug in and the session starts automatically — but the page names no protocol at
+    all. It does not mention ISO 15118, Plug and Charge, or MAC-address Autocharge,
+    and gives no technical or integration detail. Recorded as unspecified rather than
+    inferred; the protocol behind it was NOT verified.
+  connectorStandardsNamed:
+    - CCS2
+    - CHAdeMO
+  dataStandardsNamed: []
+
+consumerVsMarketDataSplit:
+  consumerDataApi: false
+  consumerDataDetail: |
+    There is no documented API by which a third party — accredited or otherwise —
+    can obtain an individual JOLT customer's charging session, energy usage or
+    billing data. A customer sees their own history only inside the JOLT mobile app
+    (iOS/Android), which is a first-party client against an undocumented backend. No
+    consent flow, no data-sharing dashboard, and no third-party access mechanism is
+    published.
+  marketDataOpen: false
+  marketDataDetail: |
+    JOLT publishes no open data. There is no charger-location feed, no live
+    availability endpoint, no session or utilisation dataset, no emissions or
+    renewable-generation data, and no open-data licence page. The public
+    "Find A Charger" page at https://joltcharge.com/au/find-a-charger/ (HTTP 200)
+    renders through the Google Maps JavaScript API
+    (https://maps.googleapis.com/maps/api/js); scanning the page source for any
+    api./graphql/data host returned only that Google Maps URL and the generic
+    WordPress https://api.w.org/ rel namespace. No JOLT-owned location data endpoint
+    was exposed on that page.
+  splitFinding: |
+    JOLT is closed on BOTH axes — an unusual and clean result. It is not the common
+    energy-sector pattern of "wide open market data, locked consumer data"; it is a
+    privately-financed infrastructure operator with no statutory obligation on either
+    side and, consistently, nothing published on either side. The advertising side of
+    the business, which is where JOLT's actual data asset lives, is the most tightly
+    held: /au/audience-insights/ offers "first-party data from over 1,100 JOLT
+    customers" covering location-based engagement, media dwell time and mobile usage,
+    but delivers it as a gated PDF behind a lead form, with no API, no data feed and
+    no named DSP/SSP/OpenRTB programmatic integration.
+
+accessGate:
+  gate: none-published
+  gated: true
+  whatADeveloperMustDo: |
+    There is no route in. A developer cannot sign up, cannot apply, cannot request a
+    key, and cannot find a form that asks for one, because JOLT publishes no developer
+    programme at all. The only self-serve onboarding that exists is CONSUMER
+    onboarding: download the JOLT app, register, and optionally activate a JOLT Plus
+    (or JOLT Plus Pro, marketed at fleets) membership in-app. Any commercial data or
+    integration conversation would have to start at the generic
+    https://joltcharge.com/au/contact/ form or the advertising/host-a-charger sales
+    pages. This is `none-published`, not `partner-only` — partner-only would imply a
+    documented commercial API behind a deal, and no such API is documented.
+  customerLoginOnly: true
+  selfServeDeveloperPortal: false
+
+authModel:
+  scheme: not published
+  detail: |
+    No auth scheme is documented because no API is documented.
+    https://joltcharge.com/.well-known/openid-configuration returned 404 and
+    https://api.joltcharge.com/.well-known/openid-configuration returned 403; no
+    OpenID Connect discovery document is served on either host. No API key programme,
+    OAuth2 authorisation server, mTLS profile, or CDR accreditation posture is
+    published. The consumer mobile app authenticates users against an undocumented
+    private backend.
+  wellKnownProbed:
+    - url: https://joltcharge.com/.well-known/openid-configuration
+      httpStatus: 404
+    - url: https://joltcharge.com/.well-known/security.txt
+      httpStatus: 404
+    - url: https://api.joltcharge.com/.well-known/openid-configuration
+      httpStatus: 403
+
+probes:
+  date: '2026-07-27'
+  note: All probes performed anonymously with curl, following redirects. HTTP status
+    recorded verbatim; 000 means the hostname did not resolve / no TLS connection.
+  results:
+    - url: https://jolt.com.au/
+      httpStatus: 301
+      finalUrl: https://joltcharge.com/au/
+      finalStatus: 200
+      note: Primary domain redirects to the AU section of the global site.
+    - url: https://joltcharge.com/
+      httpStatus: 200
+    - url: https://developer.joltcharge.com/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://developers.joltcharge.com/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://docs.joltcharge.com/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://data.joltcharge.com/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://developer.jolt.com.au/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://api.jolt.com.au/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://docs.jolt.com.au/
+      httpStatus: 000
+      note: Does not resolve.
+    - url: https://api.joltcharge.com/
+      httpStatus: 200
+      note: |
+        NOT AN API. Served from S3 behind CloudFront and Cloudflare
+        (x-amz-server-side-encryption, "Hit from cloudfront"), last-modified
+        2023-04-13, body is a static HTML document containing only
+        <meta http-equiv="refresh" content="0; url='https://www.jolt.com.au/start'" />
+        — an app deep-link redirect page occupying the api. hostname. Every path
+        probed beneath it returned 403 (S3 access denied), not 404, confirming a
+        static bucket rather than a routed API.
+    - url: https://api.joltcharge.com/openapi.json
+      httpStatus: 403
+    - url: https://api.joltcharge.com/swagger.json
+      httpStatus: 403
+    - url: https://api.joltcharge.com/api-docs
+      httpStatus: 403
+    - url: https://api.joltcharge.com/docs
+      httpStatus: 403
+    - url: https://api.joltcharge.com/swagger
+      httpStatus: 403
+    - url: https://api.joltcharge.com/swagger-ui.html
+      httpStatus: 403
+    - url: https://api.joltcharge.com/v1
+      httpStatus: 403
+    - url: https://api.joltcharge.com/v2
+      httpStatus: 403
+    - url: https://api.joltcharge.com/ocpi
+      httpStatus: 403
+    - url: https://api.joltcharge.com/ocpi/versions
+      httpStatus: 403
+      note: OCPI version discovery path probed explicitly; no OCPI surface.
+    - url: https://api.joltcharge.com/ocpi/2.2
+      httpStatus: 403
+    - url: https://api.joltcharge.com/graphql
+      httpStatus: 403
+    - url: https://api.joltcharge.com/health
+      httpStatus: 403
+    - url: https://joltcharge.com/developers
+      httpStatus: 404
+    - url: https://joltcharge.com/api
+      httpStatus: 404
+    - url: https://joltcharge.com/docs
+      httpStatus: 404
+    - url: https://joltcharge.com/data
+      httpStatus: 404
+    - url: https://joltcharge.com/openapi.json
+      httpStatus: 404
+    - url: https://joltcharge.com/swagger.json
+      httpStatus: 404
+    - url: https://joltcharge.com/api-docs
+      httpStatus: 404
+    - url: https://joltcharge.com/security
+      httpStatus: 404
+    - url: https://support.joltcharge.com/
+      httpStatus: 403
+      note: Support subdomain exists but refused the anonymous request; not inspectable.
+    - url: https://joltcharge.com/au/wp-json/
+      httpStatus: 200
+      note: |
+        WordPress REST discovery document. Registered namespaces are all
+        off-the-shelf plugin namespaces (oembed, yoast, akismet, jet-engine,
+        elementor, monsterinsights, google-site-kit, wp/v2, redirection, jet-popup,
+        wpe cache/sign-on) plus one custom namespace, jolt/v1.
+    - url: https://joltcharge.com/au/wp-json/jolt/v1
+      httpStatus: 200
+      note: |
+        The ONLY custom API namespace JOLT operates. It registers exactly one
+        endpoint: POST /jolt/v1/vat-form. It is a marketing form handler, not a
+        product API, and is not listed in apis.yml.
+    - url: https://joltcharge.com/au/wp-json/wp/v2/chargers
+      httpStatus: 404
+    - url: https://joltcharge.com/au/wp-json/wp/v2/locations
+      httpStatus: 404
+      note: No charger or location custom post type is exposed over the WP REST API.
+    - url: https://joltcharge.com/au/find-a-charger/
+      httpStatus: 200
+      note: Renders via Google Maps JS; no JOLT-owned data endpoint in page source.
+    - url: https://joltcharge.com/au/autocharge/
+      httpStatus: 200
+      note: AutoCharge marketing page; names no protocol.
+    - url: https://joltcharge.com/au/ev-charging-for-fleets/
+      httpStatus: 200
+      note: No fleet portal, dashboard, data export, reporting or API offered; fleet
+        onboarding is "download the app, select JOLT Plus Pro".
+    - url: https://joltcharge.com/au/audience-insights/
+      httpStatus: 200
+      note: Gated PDF behind a lead form; no data feed or programmatic integration named.
+    - url: https://joltcharge.com/au/advertising/
+      httpStatus: 200
+    - url: https://joltcharge.com/robots.txt
+      httpStatus: 200
+      note: Lists six regional Yoast sitemap indexes (global, uk, nz, ca, au, us).
+    - url: https://joltcharge.com/au/feed/
+      httpStatus: 200
+      note: Valid RSS 2.0 news feed — the only machine-readable JOLT-published artifact found.
+    - url: https://api.github.com/orgs/jolt-charge/repos
+      httpStatus: 200
+      note: |
+        The GitHub organisation github.com/jolt-charge (display name "Jolt Charge",
+        linked from the site footer's LinkedIn slug pattern) holds 2 public repos,
+        both forks of third-party React Native libraries: react-native-camera and
+        react-native-ad-manager. No API specs, SDKs, or JOLT-authored code. The
+        ad-manager fork corroborates the advertising-funded app model.
+
+artifacts:
+  openapiHarvested: false
+  specsCount: 0
+  note: No OpenAPI, AsyncAPI, GraphQL schema, Postman collection, JSON Schema, or
+    any other machine-readable API contract was found. No openapi/ directory was
+    created because nothing real exists to put in it.
+
+conclusion: |
+  built-stub. JOLT is captured as identity only. The organisation is a genuine and
+  significant Australian energy-adjacent operator, but it is API-invisible: zero
+  documented APIs, zero specs, zero open data, no developer gate of any kind, and no
+  regulatory obligation compelling it to publish. For the energy study it is a useful
+  negative control on the central question — the Consumer Data Right was successfully
+  transplanted from banking into energy and produced a live, open, machine-readable
+  register, but that mandate binds retailers and AEMO. The charge point operators
+  building the visible physical face of electrification sit entirely outside it, and
+  in the absence of compulsion they publish nothing.
