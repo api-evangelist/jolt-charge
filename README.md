@@ -26,6 +26,17 @@ JOLT is a Sydney-headquartered electric vehicle charging network operator that b
 
 None. JOLT publishes no documented public API. See [review.yml](review.yml) for the full probe log, including the subdomains and paths tested and the HTTP status returned by each.
 
+There is, however, a **private** API. A second enrichment round (2026-07-27) corrected round 1's reading of `api.joltcharge.com`: the host root is a static S3 app-deep-link page, but the `/v1/` prefix on that same host routes to an AWS API Gateway stage that answers `401 {"message":"Unauthorized"}` (`x-amzn-errortype: UnauthorizedException`) on every path and method probed anonymously. JOLT's own public website bundle calls one endpoint on it — `POST https://api.joltcharge.com/v1/au/web/user` for partner/user sign-up, authenticated with a static `x-api-key` header hardcoded into the JavaScript served to every visitor. That surface is undocumented, unversioned publicly, offered to nobody, and so is deliberately **not** listed as an API here; it is recorded in `review.yml` under `privateApiSurface`. The credential value is not reproduced in this repository.
+
+Also note: `joltcharge.com` returns HTTP **200 with the homepage body** for unknown paths under a region prefix, so a 200 on `/au/anything` proves nothing. Use the Yoast page sitemap and the page `<title>` as the existence test.
+
+## Artifacts
+
+- [conformance/jolt-charge-conformance.yml](conformance/jolt-charge-conformance.yml) — standards assertions (OCPI, OCPP, ISO 15118, CDR energy, OAuth2, OIDC, OpenAPI, AsyncAPI, RFC 9457, RFC 9116), every one negative, every one with the evidence observed
+- [well-known/jolt-charge-well-known.yml](well-known/jolt-charge-well-known.yml) — the `/.well-known/` probe record across all three hosts; nothing published
+- [security/jolt-charge-domain-security.yml](security/jolt-charge-domain-security.yml) — TLS 1.3 everywhere, no HSTS, no DNSSEC, no CAA; SPF + DMARC quarantine on `joltcharge.com`, no SPF and DMARC `p=none` on the legacy `jolt.com.au`
+- [llms/jolt-charge-llms.txt](llms/jolt-charge-llms.txt) — generated agent-facing summary of the closed posture
+
 ## Mandate Posture
 
 - **Home market:** Australia
@@ -45,8 +56,11 @@ The Australian Consumer Data Right was extended from banking into energy, design
 - [Blog RSS](https://joltcharge.com/au/feed/)
 - [LinkedIn](https://www.linkedin.com/company/jolt-charge)
 - [GitHub Organization](https://github.com/jolt-charge)
-- [Support](https://joltcharge.com/au/support/)
+- [Support](https://joltcharge.com/au/contact/) — the contact form is the published support route; the `/au/support/` path recorded in round 1 is a soft-404
 - [Contact Form](https://joltcharge.com/au/contact/)
+- [Sign Up](https://joltcharge.com/au/start/)
+- [Pricing](https://joltcharge.com/au/jolt-plus/)
+- [Careers](https://joltcharge.com/au/careers/)
 - [Terms of Service](https://joltcharge.com/au/terms/)
 - [Privacy Policy](https://joltcharge.com/au/privacy/)
 - [Fair Use Policy](https://joltcharge.com/au/fair-use-policy/)

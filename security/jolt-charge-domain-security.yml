@@ -1,0 +1,44 @@
+generated: '2026-07-27'
+method: probed
+source: live DNS/TLS/HTTP probes of apis.yml hosts plus the api.joltcharge.com and
+  jolt.com.au hosts observed in the JOLT website bundle and redirect chain
+hosts:
+- host: joltcharge.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Sep 24 09:29:54 2026 GMT
+  hsts: false
+- host: api.joltcharge.com
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Sep 18 04:02:56 2026 GMT
+  hsts: false
+  note: Cloudflare-fronted. The host root serves a static S3 app-deep-link page; the
+    /v1/ prefix routes to an AWS API Gateway stage that answers 401 Unauthorized on
+    every path and method probed anonymously.
+- host: jolt.com.au
+  https: true
+  tls_version: TLSv1.3
+  cert_expires: Sep 25 12:16:39 2026 GMT
+  hsts: false
+  note: Legacy primary domain; 301-redirects to https://joltcharge.com/au/.
+domains:
+- domain: joltcharge.com
+  dnssec: false
+  caa: []
+  spf: true
+  dmarc: true
+  dmarc_policy: quarantine
+- domain: jolt.com.au
+  dnssec: false
+  caa: []
+  spf: false
+  dmarc: true
+  dmarc_policy: none
+  note: Only Google site-verification TXT records are published on this domain; no
+    SPF record was returned. DMARC is present but set to p=none (monitor only).
+findings:
+- No HSTS on any JOLT host probed.
+- No CAA records and no DNSSEC on either registrable domain.
+- Email authentication is stronger on joltcharge.com (SPF + DMARC quarantine) than
+  on the legacy jolt.com.au domain (no SPF, DMARC p=none).

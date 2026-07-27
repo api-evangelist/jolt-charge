@@ -1,0 +1,54 @@
+generated: '2026-07-27'
+method: searched
+source: anonymous HTTP probes of every JOLT host, 2026-07-27
+result: none-published
+note: |
+  JOLT publishes no /.well-known/ discovery document on any host. Every path below
+  was probed anonymously with redirects followed; the status returned is recorded
+  verbatim. On joltcharge.com the WordPress install answers 404 for /.well-known/*;
+  on api.joltcharge.com the static S3 origin answers 403 (AccessDenied XML) for
+  every /.well-known/* path, which is a bucket miss rather than a routed API saying
+  "not found". No file was saved because no document was returned.
+hosts:
+- host: https://joltcharge.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/change-password
+    status: 404
+- host: https://api.joltcharge.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/oauth-protected-resource
+    status: 403
+  - path: /.well-known/api-catalog
+    status: 403
+  - path: /.well-known/ai-plugin.json
+    status: 403
+- host: https://jolt.com.au
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+consent_and_agent_signals:
+  llms_txt: 404
+  robots_txt: 200
+  robots_note: |
+    https://joltcharge.com/robots.txt returns 200 with Crawl-delay: 10, an empty
+    Disallow (everything allowed), and six regional Yoast sitemap indexes
+    (global, uk, nz, ca, au, us). No AI-preference, ContentSignal or agent
+    directives of any kind are published.
+  ai_pref: none
+  security_txt: none

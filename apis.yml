@@ -44,6 +44,12 @@ modified: '2026-07-27'
 specificationVersion: '0.19'
 apis: []
 common:
+- type: DomainSecurity
+  url: security/jolt-charge-domain-security.yml
+- type: Conformance
+  url: conformance/jolt-charge-conformance.yml
+- type: LLMsTxt
+  url: llms/jolt-charge-llms.txt
 - type: Website
   url: https://joltcharge.com/au/
 - type: Blog
@@ -55,9 +61,15 @@ common:
 - type: GitHubOrganization
   url: https://github.com/jolt-charge
 - type: Support
-  url: https://joltcharge.com/au/support/
+  url: https://joltcharge.com/au/contact/
 - type: ContactForm
   url: https://joltcharge.com/au/contact/
+- type: SignUp
+  url: https://joltcharge.com/au/start/
+- type: Pricing
+  url: https://joltcharge.com/au/jolt-plus/
+- type: Careers
+  url: https://joltcharge.com/au/careers/
 - type: TermsOfService
   url: https://joltcharge.com/au/terms/
 - type: PrivacyPolicy

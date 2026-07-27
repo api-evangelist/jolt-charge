@@ -191,13 +191,16 @@ probes:
     - url: https://api.joltcharge.com/
       httpStatus: 200
       note: |
-        NOT AN API. Served from S3 behind CloudFront and Cloudflare
+        The host ROOT is not an API. Served from S3 behind CloudFront and Cloudflare
         (x-amz-server-side-encryption, "Hit from cloudfront"), last-modified
         2023-04-13, body is a static HTML document containing only
         <meta http-equiv="refresh" content="0; url='https://www.jolt.com.au/start'" />
-        — an app deep-link redirect page occupying the api. hostname. Every path
-        probed beneath it returned 403 (S3 access denied), not 404, confirming a
-        static bucket rather than a routed API.
+        — an app deep-link redirect page occupying the api. hostname. Paths probed
+        directly beneath the root return 403 with an S3 AccessDenied XML body, not
+        404, confirming a static bucket at that prefix.
+        CORRECTED 2026-07-27 (round 2): the /v1/ prefix on this same host does NOT
+        fall through to that bucket — it routes to a real AWS API Gateway stage. See
+        the privateApiSurface section below.
     - url: https://api.joltcharge.com/openapi.json
       httpStatus: 403
     - url: https://api.joltcharge.com/swagger.json
@@ -292,12 +295,135 @@ probes:
         react-native-ad-manager. No API specs, SDKs, or JOLT-authored code. The
         ad-manager fork corroborates the advertising-funded app model.
 
+privateApiSurface:
+  discovered: '2026-07-27'
+  round: 2
+  summary: |
+    JOLT does operate a real HTTP API. It is undocumented, unadvertised and fully
+    auth-gated, and it is NOT a product API — it is the backend for the JOLT mobile
+    app and the website's own forms. Round 1 recorded api.joltcharge.com as "not an
+    API" after probing paths directly beneath the host root, all of which return the
+    S3 bucket's 403 AccessDenied. That conclusion was too strong: the /v1/ prefix on
+    the same host is routed to AWS API Gateway.
+  host: https://api.joltcharge.com
+  gateway: AWS API Gateway behind CloudFront, in front of Cloudflare
+  evidenceOfGateway: |
+    Every path under /v1/ returns HTTP 401 with body {"message":"Unauthorized"} and
+    the headers x-amzn-errortype: UnauthorizedException, x-amzn-requestid and
+    x-amz-apigw-id. Paths NOT under /v1/ (e.g. /v2/, /api/v1/, /prod/, /ocpi/versions,
+    /openapi.json) return 403 with an S3 AccessDenied XML body and no AWS API Gateway
+    headers at all. The two prefixes are served by different origins.
+  probes:
+    - url: https://api.joltcharge.com/v1/
+      httpStatus: 401
+      errorType: UnauthorizedException
+    - url: https://api.joltcharge.com/v1/openapi.json
+      httpStatus: 401
+      errorType: UnauthorizedException
+      note: Also probed with OPTIONS and a CORS preflight; still 401. The authorizer
+        rejects before any route or CORS handling, so no route list, no allowed-methods
+        header and no schema can be obtained anonymously.
+    - url: https://api.joltcharge.com/v1/swagger.json
+      httpStatus: 401
+    - url: https://api.joltcharge.com/v1/health
+      httpStatus: 401
+    - url: https://api.joltcharge.com/v1/ocpi/versions
+      httpStatus: 401
+      note: The 401 here is the blanket authorizer response on the whole stage, NOT
+        evidence of an OCPI surface. Do not read it as OCPI conformance.
+    - url: https://api.joltcharge.com/v2/
+      httpStatus: 403
+      note: S3 AccessDenied XML — no API Gateway headers. Only /v1/ is routed.
+  observedOperations:
+    - method: POST
+      url: https://api.joltcharge.com/v1/au/web/user
+      discoveredIn: https://joltcharge.com/au/wp-content/themes/jolt/dist/js/app.js
+      purpose: |
+        Partner/user sign-up. Called by the JOLT website theme's partner registration
+        form. The identical bundle is served on all five regional sites (au, nz, ca,
+        uk, us) and every one of them calls the /v1/au/ path — the region segment is
+        not switched per site.
+      requestBody: '{ email, firstName, lastName, password } as application/json'
+      auth: A static x-api-key request header carrying a UUID-form value.
+      errorCodes:
+        - USER_EXISTS
+      note: |
+        Observed by reading JOLT's own public JavaScript bundle. The endpoint was NOT
+        called, and no credential from that bundle was used, stored or reproduced in
+        this repository.
+  credentialExposure:
+    finding: |
+      The publicly served website bundle app.js hardcodes the x-api-key value used to
+      call the sign-up endpoint above. It is a long-lived, static, UUID-form key
+      shipped to every visitor of every regional site. The value is deliberately NOT
+      recorded in this repository — only the fact of the exposure is.
+    severity: noted
+    disclosureRoute: |
+      JOLT publishes no security.txt, no /security page, no responsible-disclosure
+      policy and no bug bounty (all probed, all missing — see
+      security/jolt-charge-domain-security.yml and
+      well-known/jolt-charge-well-known.yml). The only route to report this is the
+      generic contact form at https://joltcharge.com/au/contact/, which is itself a
+      finding about the organisation's security posture.
+  conclusion: |
+    The corrected posture is "private API, publicly invisible" rather than "no API".
+    Nothing about this surface is documented, versioned, rate-limit-signalled or
+    offered to third parties, so it is still NOT listed as an API in apis.yml — an
+    undocumented first-party mobile/web backend with no published contract is not a
+    public API. But the distinction matters for the energy study: JOLT is not
+    technically unable to expose charging data, it has simply built the capability
+    entirely inward.
+
+siteBehaviourCaveat:
+  softNotFound: |
+    IMPORTANT for anyone re-probing this provider: joltcharge.com's WordPress
+    multisite returns HTTP 200 with the HOMEPAGE body (title "JOLT Australia –
+    Electric Vehicle Charging Network", meta robots noindex) for unknown paths under
+    a region prefix. https://joltcharge.com/au/llms.txt and
+    https://joltcharge.com/au/openapi.json both return 200 and both are that soft-404
+    homepage, not real files. Status code alone is not sufficient on this host — the
+    Yoast page sitemap (https://joltcharge.com/au/page-sitemap.xml) and the <title>
+    are the reliable existence tests. Paths at the site ROOT (no region prefix) do
+    return a real 404.
+  deadLinkCorrected: |
+    https://joltcharge.com/au/support/ recorded in round 1 is one of these soft-404s —
+    it is not a real page and does not appear in the page sitemap. The Support pointer
+    in apis.yml was retargeted to the contact page, which is the actual published
+    support route.
+
 artifacts:
   openapiHarvested: false
   specsCount: 0
   note: No OpenAPI, AsyncAPI, GraphQL schema, Postman collection, JSON Schema, or
     any other machine-readable API contract was found. No openapi/ directory was
     created because nothing real exists to put in it.
+  round2Enrichment:
+    date: '2026-07-27'
+    written:
+      - conformance/jolt-charge-conformance.yml
+      - well-known/jolt-charge-well-known.yml
+      - security/jolt-charge-domain-security.yml
+      - llms/jolt-charge-llms.txt
+    notWritten:
+      packages: No first-party client library exists. npm registry search for
+        "joltcharge" returned 0 results; pypi.org/pypi/{joltcharge,jolt-charge,joltcharge-api}
+        all returned 404; the github.com/jolt-charge organisation holds only two forks
+        of third-party React Native libraries.
+      mcp: No MCP server, and no OpenAPI to derive candidate tools from.
+      skills: No OpenAPI to ground an agent skill in; every step would be invented.
+      openapi: See the contract-discovery probes above; nothing parses as a spec.
+      asyncapi: No event, streaming or webhook surface exists.
+      lifecycle: No status page (status.joltcharge.com does not resolve), no changelog,
+        no deprecation policy, no versioning policy, no SLA.
+      sandbox: No test environment, no test credentials, no developer sign-up.
+      scopes: No OAuth surface.
+      authentication: JOLT documents no authentication. The only auth observed is the
+        static x-api-key header on the private /v1 gateway, recorded above rather than
+        as an Authentication artifact, because the provider publishes nothing.
+      trustCenter: trust.joltcharge.com and security.joltcharge.com do not resolve;
+        no /trust, /security or /compliance page exists.
+      vulnerabilityDisclosure: No security.txt, no disclosure page, no bug bounty
+        listing found on any probed path.
 
 conclusion: |
   built-stub. JOLT is captured as identity only. The organisation is a genuine and

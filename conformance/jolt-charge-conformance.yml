@@ -1,0 +1,102 @@
+generated: '2026-07-27'
+method: derived
+source: review.yml probe log, live anonymous probes of api.joltcharge.com and
+  joltcharge.com, the JOLT website JavaScript bundle, and the CDR Register energy
+  data-holder brands endpoint
+summary: |
+  JOLT publishes no conformance claim of any kind — no standards page, no
+  compliance page, no trust centre, no open-data licence. Every entry below is
+  therefore recorded as conforms: false with the evidence that was actually
+  observed, not inferred. This is a negative record on purpose: the EV-charging
+  tier is where the energy data mandates stop, and JOLT is the clean control case.
+  CCS2 and CHAdeMO, which JOLT does name on its charging pages, are physical
+  connector standards and are recorded separately below because they say nothing
+  about interoperability at the data layer.
+standards:
+- id: ocpi
+  name: Open Charge Point Interface
+  conforms: false
+  evidence: 'https://api.joltcharge.com/ocpi/versions returned 403 (static S3 origin,
+    not a routed API); https://api.joltcharge.com/v1/ocpi/versions returned 401
+    UnauthorizedException from AWS API Gateway, which is the blanket authorizer
+    response on every /v1/ path and is not evidence of an OCPI surface. No OCPI
+    reference appears anywhere on the public site.'
+- id: ocpp
+  name: Open Charge Point Protocol
+  conforms: false
+  evidence: No OCPP reference on any public JOLT page. OCPP is charger-to-backend
+    and would not normally be publicly exposed, but no conformance claim is published
+    either.
+- id: iso-15118
+  name: ISO 15118 (Plug and Charge)
+  conforms: false
+  evidence: 'https://joltcharge.com/au/autocharge/ markets an AutoCharge feature but
+    names no protocol; it does not mention ISO 15118, Plug and Charge, or MAC-address
+    Autocharge. The mechanism behind the feature was not verified.'
+- id: cdr-energy
+  name: Consumer Data Right (Australia) — energy sector
+  conforms: false
+  evidence: 'Anonymous query of https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+    (x-v: 1, HTTP 200) returned 84 designated energy data-holder brands on 2026-07-27;
+    a case-insensitive search for "jolt" returned zero matches. JOLT is a charge point
+    operator, not a designated electricity retailer, so the CDR energy designation
+    does not reach it.'
+  applicable: false
+- id: green-button-espi
+  name: Green Button / ESPI
+  conforms: false
+  evidence: No energy usage data feed of any kind is published.
+- id: openadr
+  name: OpenADR
+  conforms: false
+  evidence: No demand-response or grid-services integration is published.
+- id: oauth2
+  name: OAuth 2.0
+  conforms: false
+  evidence: 'https://joltcharge.com/.well-known/oauth-authorization-server and
+    /.well-known/oauth-protected-resource returned 404; the api.joltcharge.com
+    equivalents returned 403. The one first-party API call observed in the public
+    site bundle authenticates with a static x-api-key request header, not OAuth.'
+- id: openid-connect
+  name: OpenID Connect
+  conforms: false
+  evidence: 'https://joltcharge.com/.well-known/openid-configuration returned 404 and
+    https://api.joltcharge.com/.well-known/openid-configuration returned 403. No OIDC
+    discovery document is served on any JOLT host.'
+- id: rfc9116-security-txt
+  name: RFC 9116 security.txt
+  conforms: false
+  evidence: /.well-known/security.txt returned 404 on joltcharge.com and jolt.com.au,
+    403 on api.joltcharge.com. See well-known/jolt-charge-well-known.yml.
+- id: rfc9457-problem-details
+  name: RFC 9457 Problem Details
+  conforms: false
+  evidence: 'The only error bodies observable anonymously are the AWS API Gateway
+    default {"message":"Unauthorized"} on /v1/* and an S3 AccessDenied XML document
+    elsewhere. Neither is application/problem+json. The site bundle shows the API
+    returning an application-level code field (e.g. USER_EXISTS), which is a bespoke
+    envelope rather than RFC 9457.'
+- id: openapi
+  name: OpenAPI
+  conforms: false
+  evidence: 'Probed on every host: /openapi.json, /openapi.yaml, /v1/openapi.json,
+    /swagger.json, /api-docs, /docs, /redoc, /rapidoc. joltcharge.com answers 404 (or
+    a WordPress soft-404 rendering the homepage with a 200), api.joltcharge.com
+    answers 403 from S3 at the root and 401 from API Gateway under /v1/. No document
+    parsed as OpenAPI or Swagger.'
+- id: asyncapi
+  name: AsyncAPI
+  conforms: false
+  evidence: No event, streaming or webhook surface is published, so there is nothing
+    for an AsyncAPI document to describe.
+connector_standards_named:
+- id: ccs2
+  name: CCS2
+  note: Physical connector/charging standard named on JOLT charging pages. Not a data
+    or API standard.
+- id: chademo
+  name: CHAdeMO
+  note: Physical connector/charging standard named on JOLT charging pages. Not a data
+    or API standard.
+published_compliance_program: false
+published_certifications: []
