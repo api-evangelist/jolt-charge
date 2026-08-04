@@ -1,0 +1,21 @@
+{
+  "repo": "jolt-charge",
+  "feeds": [
+    {
+      "source": "https://joltcharge.com/au/",
+      "feed_url": "https://joltcharge.com/au/feed/",
+      "title": "",
+      "saved": 0,
+      "method": "discovered"
+    },
+    {
+      "source": "https://joltcharge.com/au/news/",
+      "feed_url": "https://joltcharge.com/au/feed/",
+      "title": "",
+      "saved": 0,
+      "method": "discovered"
+    }
+  ],
+  "post_count": 0,
+  "fetched": "2026-08-01T15:49:00Z"
+}
