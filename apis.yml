@@ -27,6 +27,17 @@ description: >-
   it, and no OCPP, OCPI, ISO 15118 or Green Button/ESPI conformance is published.
   All customer charging data, session history and audience analytics are reachable
   only through the JOLT consumer app or a sales conversation.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://joltcharge.com/au/wp-content/uploads/sites/10/2023/05/jolt-logo.svg
 tags:
 - Energy
