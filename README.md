@@ -1,4 +1,4 @@
-# JOLT (jolt-charge)
+# JOLT
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,71 +64,86 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-JOLT is a Sydney-headquartered electric vehicle charging network operator that builds and runs free-to-start kerbside DC fast chargers across Australia, and has since extended the same model into New Zealand, Canada, the United Kingdom and the United States. Its charge points deliver the first 7kWh of each day's charging at no cost — around 45km of range in roughly 15 minutes over CCS2 or CHAdeMO — funded not by the driver but by the digital out-of-home advertising screens mounted on the charger itself, which makes JOLT simultaneously a charge point operator and a media network selling audience reach to advertisers. It sits in the energy value chain as a downstream infrastructure and demand-side player: it buys electricity (claiming 100% GreenPower green-certified wind and solar), owns and operates the charging assets on public and retail land in partnership with governments and hosts such as Transport for NSW, Ausgrid and major grocery retailers, and monetises the dwell time rather than the kilowatt-hour. Its API posture is honestly closed. JOLT publishes no developer programme, no API documentation, no OpenAPI or other machine-readable contract, and no open data feed; the only public HTTP surfaces on its domains are a marketing WordPress install (whose custom `jolt/v1` REST namespace exposes a single VAT form endpoint) and an `api.joltcharge.com` host that serves a static redirect to the mobile app rather than any API. It is not a designated data holder under the Australian Consumer Data Right for energy — it does not appear in the CDR Register's energy data holder brands — so the CDR energy mandate that compels Australian electricity retailers to expose standardised usage and tariff data does not reach it, and no OCPP, OCPI, ISO 15118 or Green Button/ESPI conformance is published. All customer charging data, session history and audience analytics are reachable only through the JOLT consumer app or a sales conversation.
+JOLT is a Sydney-headquartered electric vehicle charging network operator that builds and runs free-to-start kerbside DC fast chargers across Australia, and has since extended the same model into New Zealand, Canada, the United Kingdom and the United States. Its charge points deliver the first 7kWh of each day's charging at no cost — around 45km of range in roughly 15 minutes over CCS2 or CHAdeMO — funded not by the driver but by the digital out-of-home advertising screens mounted on the charger itself, which makes JOLT simultaneously a charge point operator and a media network selling audience reach to advertisers. It sits in the energy value chain as a downstream infrastructure and demand-side player: it buys electricity (claiming 100% GreenPower green-certified wind and solar), owns and operates the charging assets on public and retail land in partnership with governments and hosts such as Transport for NSW, Ausgrid and major grocery retailers, and monetises the dwell time rather than the kilowatt-hour. Its API posture is honestly closed. JOLT publishes no developer programme, no API documentation, no OpenAPI or other machine-readable contract, and no open data feed; the only public HTTP surfaces on its domains are a marketing WordPress install (whose custom jolt/v1 REST namespace exposes a single VAT form endpoint) and an api.joltcharge.com host that serves a static redirect to the mobile app rather than any API. It is not a designated data holder under the Australian Consumer Data Right for energy — it does not appear in the CDR Register's energy data holder brands — so the CDR energy mandate that compels Australian electricity retailers to expose standardised usage and tariff data does not reach it, and no OCPP, OCPI, ISO 15118 or Green Button/ESPI conformance is published. All customer charging data, session history and audience analytics are reachable only through the JOLT consumer app or a sales conversation.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/jolt-charge/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/jolt-charge/refs/heads/main/apis.yml)
+**Areas:** Energy · Australia · EV Charging · Electricity · Utilities · Renewables · Advertising · Mobility · Carbon · Infrastructure
 
-## Tags
+## JOLT on APIs.io
 
-- Energy
-- Australia
-- EV Charging
-- Electricity
-- Utilities
-- Renewables
-- Advertising
-- Mobility
-- Carbon
-- Infrastructure
+Everything profiled for JOLT is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/jolt-charge/](https://apis.io/providers/jolt-charge/)** — or go straight to one of the APIs or properties below.
 
-## Timestamps
+### Published properties
 
-- **Created:** 2026-07-27
-- **Modified:** 2026-07-27
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## APIs
+#### Security (1)
 
-None. JOLT publishes no documented public API. See [review.yml](review.yml) for the full probe log, including the subdomains and paths tested and the HTTP status returned by each.
+Authentication, trust centre, and vulnerability disclosure.
 
-There is, however, a **private** API. A second enrichment round (2026-07-27) corrected round 1's reading of `api.joltcharge.com`: the host root is a static S3 app-deep-link page, but the `/v1/` prefix on that same host routes to an AWS API Gateway stage that answers `401 {"message":"Unauthorized"}` (`x-amzn-errortype: UnauthorizedException`) on every path and method probed anonymously. JOLT's own public website bundle calls one endpoint on it — `POST https://api.joltcharge.com/v1/au/web/user` for partner/user sign-up, authenticated with a static `x-api-key` header hardcoded into the JavaScript served to every visitor. That surface is undocumented, unversioned publicly, offered to nobody, and so is deliberately **not** listed as an API here; it is recorded in `review.yml` under `privateApiSurface`. The credential value is not reproduced in this repository.
+- [Jolt Charge Domain Security](https://apis.io/security/jolt-charge/jolt-charge-domain-security/)
 
-Also note: `joltcharge.com` returns HTTP **200 with the homepage body** for unknown paths under a region prefix, so a 200 on `/au/anything` proves nothing. Use the Yoast page sitemap and the page `<title>` as the existence test.
+## Where to find this API
 
-## Artifacts
-
-- [conformance/jolt-charge-conformance.yml](conformance/jolt-charge-conformance.yml) — standards assertions (OCPI, OCPP, ISO 15118, CDR energy, OAuth2, OIDC, OpenAPI, AsyncAPI, RFC 9457, RFC 9116), every one negative, every one with the evidence observed
-- [well-known/jolt-charge-well-known.yml](well-known/jolt-charge-well-known.yml) — the `/.well-known/` probe record across all three hosts; nothing published
-- [security/jolt-charge-domain-security.yml](security/jolt-charge-domain-security.yml) — TLS 1.3 everywhere, no HSTS, no DNSSEC, no CAA; SPF + DMARC quarantine on `joltcharge.com`, no SPF and DMARC `p=none` on the legacy `jolt.com.au`
-- [llms/jolt-charge-llms.txt](llms/jolt-charge-llms.txt) — generated agent-facing summary of the closed posture
-
-## Mandate Posture
-
-- **Home market:** Australia
-- **Mandate regime:** none
-- **Mandate status:** not-applicable
-- **Data standard:** no standard reference found (CCS2 and CHAdeMO are connector standards, not data standards)
-- **Consumer data API:** no
-- **Open market data:** no
-- **Access gate:** none-published
-
-The Australian Consumer Data Right was extended from banking into energy, designating electricity retailers as data holders with AEMO as the gateway. That designation reaches retailers and AEMO — not charge point operators. An anonymous query against the CDR Register's public energy data holder brands endpoint (`https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary`, `x-v: 1`, HTTP 200) returned 84 brands on 2026-07-27; none of them is JOLT.
-
-## Common Properties
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
 - [Website](https://joltcharge.com/au/)
-- [Blog](https://joltcharge.com/au/news/)
-- [Blog RSS](https://joltcharge.com/au/feed/)
-- [LinkedIn](https://www.linkedin.com/company/jolt-charge)
-- [GitHub Organization](https://github.com/jolt-charge)
-- [Support](https://joltcharge.com/au/contact/) — the contact form is the published support route; the `/au/support/` path recorded in round 1 is a soft-404
-- [Contact Form](https://joltcharge.com/au/contact/)
-- [Sign Up](https://joltcharge.com/au/start/)
 - [Pricing](https://joltcharge.com/au/jolt-plus/)
-- [Careers](https://joltcharge.com/au/careers/)
-- [Terms of Service](https://joltcharge.com/au/terms/)
-- [Privacy Policy](https://joltcharge.com/au/privacy/)
-- [Fair Use Policy](https://joltcharge.com/au/fair-use-policy/)
+- [Sign up](https://joltcharge.com/au/start/)
+- [Support](https://joltcharge.com/au/contact/)
+- [Blog](https://joltcharge.com/au/news/)
+- [Terms of service](https://joltcharge.com/au/terms/)
+- [Privacy policy](https://joltcharge.com/au/privacy/)
+- [GitHub](https://github.com/jolt-charge)
 
-## Maintainers
+## API Evangelist rating
 
-- Kin Lane — kin@apievangelist.com
+**Kin Score 15.9** — emerging · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 48.2 |
+| Contract quality | 0.0 |
+| Contract governance | 0.0 |
+| Operational transparency | 2.6 |
+| Developer ergonomics | 7.1 |
+| Access clarity | 44.7 |
+
+**Agent readiness 0.0** — human-only
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | — |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | — |
+| Idempotency | — |
+| Error Semantics | — |
+| OpenAPI Examples | — |
+| Rate Limit Signal | — |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 15.6** — Energy & Utilities
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/jolt-charge/](https://apis.io/providers/jolt-charge/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for JOLT: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/jolt-charge/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
